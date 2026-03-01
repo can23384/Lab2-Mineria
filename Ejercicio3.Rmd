@@ -1,0 +1,108 @@
+---
+title: "Ejercicio 3"
+author: "Estuardo"
+date: "2026-03-01"
+output: html_document
+---
+
+## Ejercicio 3
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Carga de libreías
+```{r librerías, include=FALSE}
+library(tidyverse)
+library(psych)
+library(corrplot)
+library(FactoMineR)
+library(factoextra)
+```
+
+## Importar el dataset
+Para mostrar que si se importó, mostraré el head
+```{r Dataset, include=FALSE}
+df <- read.csv("movies_2026.csv")
+
+head(df)
+```
+
+## Quitar variables numéricas y categóricas
+```{r VarNum y VarCat}
+df_numeric <- df %>%
+  select(where(is.numeric))
+
+df_numeric <- df_numeric %>%
+  select(-id)
+
+df %>%
+  select(where(is.character)) %>%
+  summarise_all(n_distinct)
+```
+
+## Ver inciso anterior pero de mejor manera
+Esto es más que todo visual, para que se puedan ver las 28 columnas con el dato necesario
+```{r Pivot}
+library(tidyverse)
+
+df %>%
+  select(where(is.character)) %>%
+  summarise_all(n_distinct) %>%
+  pivot_longer(cols = everything(),
+               names_to = "Variable",
+               values_to = "Valores_Unicos") %>%
+  arrange(desc(Valores_Unicos))
+```
+## Calcular matriz
+
+```{r Matriz}
+cor_matrix <- cor(df_numeric, use = "complete.obs")
+```
+
+## Ver la matriz
+```{r VerMatriz}
+library(corrplot)
+
+corrplot(cor_matrix,
+         method = "color",
+         type = "upper",
+         tl.cex = 0.7,
+         number.cex = 0.6)
+```
+
+## KMO Y Barlett
+```{r KMO&Barlett}
+KMO(cor_matrix)
+cortest.bartlett(cor_matrix, n = nrow(df_numeric))
+```
+
+## Aplicar PCA
+Solo que antes de aplicar el PCA, tuve que limpiar el dataset, para evitar problemas
+
+```{r PCA}
+# Antes voy a limpiar un poco los na
+
+df_numeric_clean <- na.omit(df_numeric)
+
+pca_result <- prcomp(df_numeric_clean,
+                     scale. = TRUE,
+                     center = TRUE)
+```
+
+## Resumen del PCA
+```{r ResumenPCA}
+summary(pca_result)
+```
+
+## Scree Plot
+```{r ScreePlot}
+library(factoextra)
+fviz_eig(pca_result)
+```
+
+## Loadings
+
+```{r Loadings}
+round(pca_result$rotation[, 1:3], 3)
+```
