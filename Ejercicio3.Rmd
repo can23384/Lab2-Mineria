@@ -106,3 +106,39 @@ fviz_eig(pca_result)
 ```{r Loadings}
 round(pca_result$rotation[, 1:3], 3)
 ```
+
+##Parte4
+```{r}
+library(umap)
+
+# Extraer los primeros 6 componentes
+pca_scores <- pca_result$x[, 1:6]
+
+# Aplicar UMAP
+set.seed(123)
+
+umap_result <- umap(pca_scores)
+
+# Convertir a dataframe
+umap_df <- as.data.frame(umap_result$layout)
+colnames(umap_df) <- c("UMAP1", "UMAP2")
+```
+
+```{r}
+library(ggplot2)
+
+ggplot(umap_df, aes(x = UMAP1, y = UMAP2)) +
+  geom_point(alpha = 0.5) +
+  theme_minimal() +
+  ggtitle("Proyección UMAP de las películas")
+```
+
+
+```{r}
+umap_df$revenue <- df_numeric_clean$revenue
+
+ggplot(umap_df, aes(x = UMAP1, y = UMAP2, color = revenue)) +
+  geom_point(alpha = 0.6) +
+  scale_color_viridis_c() +
+  theme_minimal()
+```
